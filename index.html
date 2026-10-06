@@ -134,6 +134,28 @@ textarea{min-height:76px;resize:vertical}
 
 /* register */
 .reg{border-top:1px solid var(--line)}
+
+/* account: login / sign up / guest */
+.acct{background:none;border:1.5px solid rgba(255,255,255,.35);color:inherit;font:600 .92rem var(--body);padding:7px 14px;border-radius:999px;cursor:pointer;max-width:46vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct.in{border-color:var(--marigold);color:var(--marigold)}
+.auth-wrap{position:fixed;inset:0;z-index:50;background:rgba(4,14,15,.72);display:grid;place-items:center;padding:20px}
+.auth{background:var(--surface);color:var(--ink);width:min(420px,100%);border-radius:16px;padding:22px;display:grid;gap:14px;max-height:calc(100vh - 40px);overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.auth h2{font-family:var(--display);font-weight:900;font-size:2rem;text-transform:uppercase;line-height:1}
+.auth .why{margin:0;color:var(--muted);font-size:.95rem}
+.atabs{display:grid;grid-template-columns:1fr 1fr;background:var(--bg);border-radius:10px;padding:4px;gap:4px}
+.atab{border:0;background:none;padding:9px;border-radius:8px;font:700 .95rem var(--body);color:var(--muted);cursor:pointer}
+.atab[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.auth form{gap:12px}
+.auth .pin{letter-spacing:.5em;font-family:var(--mono);font-size:1.2rem}
+.auth .or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.85rem}
+.auth .or::before,.auth .or::after{content:"";flex:1;height:1px;background:var(--line)}
+.auth .guest{width:100%}
+.auth .x{justify-self:end;background:none;border:0;color:var(--muted);font:600 .9rem var(--body);cursor:pointer;margin:-8px -6px -6px 0}
+.pts-card{background:var(--surface);border:1.5px solid var(--marigold);border-radius:14px;padding:16px 18px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;margin-bottom:16px}
+.pts-card b{font-family:var(--display);font-weight:900;font-size:2.4rem;line-height:1;font-variant-numeric:tabular-nums}
+.pts-card span{color:var(--muted);font-size:.92rem}
+.acct-bar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;margin-bottom:18px;color:var(--muted)}
+.acct-bar strong{color:var(--ink)}
 .tabs{background:var(--surface);border-bottom:1px solid var(--line)}
 .tabs .wrap{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
 .tab{flex:none;background:none;border:0;border-bottom:3px solid transparent;color:var(--muted);font:700 1rem var(--body);padding:14px 14px 11px;cursor:pointer;white-space:nowrap}
@@ -477,7 +499,7 @@ html,body{height:100%}
     <div class="l-phone" id="homePhone"></div>
     <div class="l-btns">
       <button type="button" class="btn btn-m l-book" id="goBook">Book a car</button>
-      <button type="button" class="btn l-copy" data-go="trips">My trips</button>
+      <button type="button" class="btn l-copy" id="goTrips">My trips</button>
       <button type="button" class="btn l-copy" id="copyHome">Copy number</button>
     </div>
   </div>
@@ -489,6 +511,7 @@ html,body{height:100%}
     <button type="button" class="back" id="goHome">← Home</button>
     <span class="logo" style="font-size:1.3rem"><i></i>R.V.A.S TRAVELS</span>
     <span class="tel" id="topPhone"></span>
+    <button type="button" class="acct" id="acctBtn">Log in</button>
   </div>
 </header>
 <nav class="tabs" aria-label="Booking sections">
@@ -569,7 +592,7 @@ html,body{height:100%}
   <div class="wrap">
     <div class="head"><span class="eyebrow">My trips</span><h2>Your bookings</h2></div>
     <div id="tripsBody"></div>
-    <p class="note">Trips you book from this phone are listed here. Your trip is final once we call you to confirm it.</p>
+    <p class="note" id="tripsNote">Trips you book from this phone are listed here. Log in to see your trips and points on any phone. Your trip is final once we call you to confirm it.</p>
   </div>
 </section>
 
@@ -615,6 +638,35 @@ html,body{height:100%}
   </div>
 </footer>
 
+</div>
+
+<div class="auth-wrap" id="authWrap" hidden>
+  <div class="auth" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <button type="button" class="x" id="authClose">Close ✕</button>
+    <h2 id="authTitle">Welcome</h2>
+    <p class="why">Log in to see all your trips and reward points on any phone. Or continue as a guest.</p>
+    <div class="atabs" role="tablist">
+      <button type="button" class="atab" role="tab" id="atabLogin" aria-selected="true">Log in</button>
+      <button type="button" class="atab" role="tab" id="atabSignup" aria-selected="false">Sign up</button>
+    </div>
+    <form id="loginForm" novalidate>
+      <label for="lPhone">Mobile number<input id="lPhone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="10-digit mobile"></label>
+      <label for="lPin">4-digit PIN<input id="lPin" class="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="current-password" placeholder="••••"></label>
+      <p class="err" id="lErr" hidden></p>
+      <button class="btn btn-m" type="submit" id="lBtn">Log in</button>
+      <p class="note">Forgot your PIN? Call or WhatsApp us and we will reset it.</p>
+    </form>
+    <form id="signupForm" novalidate hidden>
+      <label for="sName">Your name<input id="sName" autocomplete="name" placeholder="Full name"></label>
+      <label for="sPhone">Mobile number<input id="sPhone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="10-digit mobile"></label>
+      <label for="sPin">Choose a 4-digit PIN<input id="sPin" class="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="new-password" placeholder="••••"></label>
+      <label for="sPin2">Enter the PIN again<input id="sPin2" class="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="new-password" placeholder="••••"></label>
+      <p class="err" id="sErr" hidden></p>
+      <button class="btn btn-m" type="submit" id="sBtn">Create account</button>
+    </form>
+    <div class="or">or</div>
+    <button type="button" class="btn btn-line guest" id="guestBtn">Continue as guest</button>
+  </div>
 </div>
 <script>
 // Owner's WhatsApp / phone number: country code + 10 digits, no spaces
@@ -684,7 +736,7 @@ $("bookingForm").addEventListener("submit", async e => {
   $("waLink").href = "https://wa.me/" + PHONE + "?text=" + encodeURIComponent(msg);
   $("done").hidden = false;
   $("done").scrollIntoView({block:"nearest", behavior: smooth()});
-  sendToSheet(b);
+  sendToSheet(b); setTimeout(refreshAcct, 4000);
   saveLocal(b); renderTrips();
 });
 
@@ -698,7 +750,8 @@ function writeLocal(list){ try { localStorage.setItem(LKEY, JSON.stringify(list)
 function saveLocal(b){ const l = loadLocal().filter(x => x.no !== b.no); l.push({...b, savedAt: Date.now()}); writeLocal(l); }
 const dayStart = d => { const x = new Date(d + "T00:00"); return isNaN(x) ? null : x; };
 function tripState(t){
-  if(t.cancelReq) return "cx";
+  if(t.cancelReq || t.status === "Cancelled") return "cx";
+  if(t.status === "Completed") return "done";
   const today = new Date(); today.setHours(0,0,0,0);
   const last = dayStart(t.ret) || dayStart(t.date);
   return last && last >= today ? "up" : "done";
@@ -706,8 +759,25 @@ function tripState(t){
 function waFor(text){ return "https://wa.me/" + PHONE + "?text=" + encodeURIComponent(text); }
 function el(tag, cls, text){ const e = document.createElement(tag); if(cls) e.className = cls; if(text != null) e.textContent = text; return e; }
 function renderTrips(){
-  const list = loadLocal();
+  const local = loadLocal();
+  const acct = window.rvasAcct;
+  let list = local;
+  if(acct && acct.trips){
+    const seen = new Set(acct.trips.map(t => t.no));
+    const mine = norm10(acct.phone);
+    list = acct.trips.map(t => { const l = local.find(x => x.no === t.no); return l && l.cancelReq ? {...t, cancelReq: true} : t; })
+      .concat(local.filter(t => !seen.has(t.no) && norm10(t.phone) === mine));
+  }
   const box = $("tripsBody"); box.textContent = "";
+  if(acct){
+    const bar = el("div","acct-bar"); const who = el("span"); who.append(document.createTextNode("Logged in as "), el("strong", null, acct.name + " · " + acct.phone));
+    bar.append(who); box.append(bar);
+    if(acct.points){
+      const pc = el("div","pts-card");
+      pc.append(el("b", null, String(acct.points.balance)), el("span", null, "reward points · worth ₹" + Math.floor(acct.points.balance / 10) + " off your next trip"), el("span", null, "Earned " + acct.points.earned + " · Used " + acct.points.used));
+      box.append(pc);
+    }
+  }
   const up = list.filter(t => tripState(t) === "up").sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
   const past = list.filter(t => tripState(t) !== "up").sort((a,b) => (b.date+b.time).localeCompare(a.date+a.time));
   $("upCnt").hidden = !up.length; $("upCnt").textContent = up.length;
@@ -791,15 +861,106 @@ document.addEventListener("click", e => {
   const t = e.target.closest("[data-go]"); if(!t) return;
   e.preventDefault(); go(t.dataset.go);
 });
+/* ---------- accounts ---------- */
+const AKEY = "rvas.auth.v1";
+const norm10 = v => String(v || "").replace(/\D/g, "").slice(-10);
+function getAuth(){ try { return JSON.parse(localStorage.getItem(AKEY) || "null"); } catch(e){ return null; } }
+function setAuth(a){ try { a ? localStorage.setItem(AKEY, JSON.stringify(a)) : localStorage.removeItem(AKEY); } catch(e){} }
+function isGuest(){ try { return sessionStorage.getItem("rvas.guest") === "1"; } catch(e){ return false; } }
+function setGuest(){ try { sessionStorage.setItem("rvas.guest", "1"); } catch(e){} }
+async function api(payload){
+  const r = await fetch(SHEET_URL, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify(payload)});
+  return r.json();
+}
+let pendingView = null;
+function openAuth(view){
+  pendingView = view || null;
+  $("authWrap").hidden = false;
+  showAuthTab("login");
+}
+function closeAuth(){ $("authWrap").hidden = true; }
+function showAuthTab(which){
+  $("atabLogin").setAttribute("aria-selected", String(which === "login"));
+  $("atabSignup").setAttribute("aria-selected", String(which === "signup"));
+  $("loginForm").hidden = which !== "login"; $("signupForm").hidden = which !== "signup";
+  setTimeout(() => (which === "login" ? $("lPhone") : $("sName")).focus(), 30);
+}
+function paintAcct(){
+  const a = getAuth(), b = $("acctBtn");
+  b.textContent = a ? "Hi, " + a.name.split(" ")[0] + " · Log out" : "Log in";
+  b.classList.toggle("in", !!a);
+  if(a){ if(!$("fName").value) $("fName").value = a.name; if(!$("fPhone").value) $("fPhone").value = a.phone; }
+}
+async function refreshAcct(){
+  const a = getAuth();
+  if(!a){ window.rvasAcct = null; renderTrips(); return; }
+  window.rvasAcct = window.rvasAcct || {name: a.name, phone: a.phone};
+  try {
+    const r = await api({action: "me", token: a.token});
+    if(r.ok){ window.rvasAcct = r; } else if(r.error === "expired"){ setAuth(null); window.rvasAcct = null; paintAcct(); }
+  } catch(e){}
+  renderTrips();
+}
+function signedIn(r){
+  setAuth({token: r.token, name: r.name, phone: r.phone});
+  window.rvasAcct = {name: r.name, phone: r.phone};
+  $("fName").value = r.name; $("fPhone").value = r.phone;
+  paintAcct(); closeAuth(); refreshAcct();
+  if(pendingView) go(pendingView);
+}
+function bindAuth(){
+  $("atabLogin").addEventListener("click", () => showAuthTab("login"));
+  $("atabSignup").addEventListener("click", () => showAuthTab("signup"));
+  $("authClose").addEventListener("click", closeAuth);
+  $("authWrap").addEventListener("click", e => { if(e.target === $("authWrap")) closeAuth(); });
+  document.addEventListener("keydown", e => { if(e.key === "Escape" && !$("authWrap").hidden) closeAuth(); });
+  $("guestBtn").addEventListener("click", () => { setGuest(); closeAuth(); if(pendingView) go(pendingView); });
+  $("acctBtn").addEventListener("click", async () => {
+    const a = getAuth();
+    if(!a){ openAuth(null); return; }
+    const b = $("acctBtn");
+    if(!b.dataset.arm){ b.dataset.arm = "1"; b.textContent = "Tap again to log out"; setTimeout(() => { delete b.dataset.arm; paintAcct(); }, 3000); return; }
+    delete b.dataset.arm;
+    try { await api({action: "logout", token: a.token}); } catch(e){}
+    setAuth(null); window.rvasAcct = null; paintAcct(); renderTrips();
+  });
+  const showErr = (id, msg) => { $(id).textContent = msg; $(id).hidden = !msg; };
+  $("loginForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const phone = norm10($("lPhone").value), pin = $("lPin").value.trim();
+    if(phone.length !== 10) return showErr("lErr", "Please enter your 10-digit mobile number.");
+    if(!/^\d{4}$/.test(pin)) return showErr("lErr", "Please enter your 4-digit PIN.");
+    showErr("lErr", ""); $("lBtn").disabled = true; $("lBtn").textContent = "Logging in…";
+    try { const r = await api({action: "login", phone, pin}); r.ok ? signedIn(r) : showErr("lErr", r.error || "Could not log in. Please try again."); }
+    catch(err){ showErr("lErr", "No internet connection. Please try again."); }
+    $("lBtn").disabled = false; $("lBtn").textContent = "Log in";
+  });
+  $("signupForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const name = $("sName").value.trim(), phone = norm10($("sPhone").value), pin = $("sPin").value.trim();
+    if(!name) return showErr("sErr", "Please enter your name.");
+    if(!/^[6-9]\d{9}$/.test(phone)) return showErr("sErr", "Please enter a valid 10-digit mobile number.");
+    if(!/^\d{4}$/.test(pin)) return showErr("sErr", "Please choose a 4-digit PIN.");
+    if(pin !== $("sPin2").value.trim()) return showErr("sErr", "The two PINs do not match.");
+    showErr("sErr", ""); $("sBtn").disabled = true; $("sBtn").textContent = "Creating account…";
+    try { const r = await api({action: "signup", name, phone, pin}); r.ok ? signedIn(r) : showErr("sErr", r.error || "Could not create the account. Please try again."); }
+    catch(err){ showErr("sErr", "No internet connection. Please try again."); }
+    $("sBtn").disabled = false; $("sBtn").textContent = "Create account";
+  });
+}
+function goGated(view){ (getAuth() || isGuest()) ? go(view) : openAuth(view); }
+
 (function(){
   const p = $("phoneText").textContent;
   $("homePhone").textContent = p; $("topPhone").textContent = p;
-  $("carStage").addEventListener("click", () => go("book"));
-  $("goBook").addEventListener("click", () => go("book"));
+  bindAuth(); paintAcct();
+  $("carStage").addEventListener("click", () => goGated("book"));
+  $("goBook").addEventListener("click", () => goGated("book"));
   $("goHome").addEventListener("click", () => go("home"));
   $("copyHome").addEventListener("click", e => copyText(p, e.currentTarget, $("homePhone")));
   window.addEventListener("popstate", () => go(location.hash.slice(1) || "home", false));
-  renderTrips();
+  $("goTrips").addEventListener("click", () => goGated("trips"));
+  refreshAcct();
   const h = location.hash.slice(1);
   if(VIEWS.includes(h)) go(h, false);
 })();
