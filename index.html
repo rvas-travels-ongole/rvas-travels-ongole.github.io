@@ -138,8 +138,12 @@ textarea{min-height:76px;resize:vertical}
 /* account: login / sign up / guest */
 .acct{background:none;border:1.5px solid rgba(255,255,255,.35);color:inherit;font:600 .92rem var(--body);padding:7px 14px;border-radius:999px;cursor:pointer;max-width:46vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .acct.in{border-color:var(--marigold);color:var(--marigold)}
-.auth-wrap{position:fixed;inset:0;z-index:50;background:rgba(4,14,15,.72);display:grid;place-items:center;padding:20px}
-.auth{background:var(--surface);color:var(--ink);width:min(420px,100%);border-radius:16px;padding:22px;display:grid;gap:14px;max-height:calc(100vh - 40px);overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.auth-wrap{position:fixed;inset:0;z-index:50;background:radial-gradient(90% 60% at 50% 0%,var(--night-2),var(--night) 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:calc(20px + env(safe-area-inset-top,0px)) 20px calc(20px + env(safe-area-inset-bottom,0px));overflow:auto}
+.auth-brand{display:grid;justify-items:center;gap:6px;color:var(--night-ink);text-align:center}
+.auth-brand b{font-family:var(--display);font-weight:900;font-size:clamp(2.2rem,9vw,3.4rem);line-height:.9;letter-spacing:.04em}
+.auth-brand b span{color:var(--marigold)}
+.auth-brand small{font-family:var(--mono);font-size:.78rem;letter-spacing:.2em;opacity:.75}
+.auth{background:var(--surface);color:var(--ink);width:min(420px,100%);border-radius:16px;padding:22px;display:grid;gap:14px;box-shadow:0 30px 80px rgba(0,0,0,.45);flex:none}
 .auth h2{font-family:var(--display);font-weight:900;font-size:2rem;text-transform:uppercase;line-height:1}
 .auth .why{margin:0;color:var(--muted);font-size:.95rem}
 .atabs{display:grid;grid-template-columns:1fr 1fr;background:var(--bg);border-radius:10px;padding:4px;gap:4px}
@@ -150,7 +154,7 @@ textarea{min-height:76px;resize:vertical}
 .auth .or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.85rem}
 .auth .or::before,.auth .or::after{content:"";flex:1;height:1px;background:var(--line)}
 .auth .guest{width:100%}
-.auth .x{justify-self:end;background:none;border:0;color:var(--muted);font:600 .9rem var(--body);cursor:pointer;margin:-8px -6px -6px 0}
+.auth .x{justify-self:start;background:none;border:0;color:var(--muted);font:600 .95rem var(--body);cursor:pointer;margin:-8px 0 -6px -6px;padding:4px 6px}
 .pts-card{background:var(--surface);border:1.5px solid var(--marigold);border-radius:14px;padding:16px 18px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;margin-bottom:16px}
 .pts-card b{font-family:var(--display);font-weight:900;font-size:2.4rem;line-height:1;font-variant-numeric:tabular-nums}
 .pts-card span{color:var(--muted);font-size:.92rem}
@@ -641,9 +645,10 @@ html,body{height:100%}
 </div>
 
 <div class="auth-wrap" id="authWrap" hidden>
+  <div class="auth-brand"><b>R.V.A.S <span>TRAVELS</span></b><small>ONGOLE · 24 × 7 · ALL INDIA PERMIT</small></div>
   <div class="auth" role="dialog" aria-modal="true" aria-labelledby="authTitle">
-    <button type="button" class="x" id="authClose">Close ✕</button>
-    <h2 id="authTitle">Welcome to R.V.A.S Travels</h2>
+    <button type="button" class="x" id="authClose">← Back</button>
+    <h2 id="authTitle">Log in to book</h2>
     <p class="why">Log in or sign up to book faster and see your trips and reward points on any phone. Or continue as a guest.</p>
     <div class="atabs" role="tablist">
       <button type="button" class="atab" role="tab" id="atabLogin" aria-selected="true">Log in</button>
@@ -876,7 +881,7 @@ let pendingView = null, authForced = false;
 function openAuth(view, forced){
   pendingView = view || null;
   authForced = !!forced;
-  $("authClose").hidden = authForced;
+  $("authClose").hidden = false;
   $("authWrap").hidden = false;
   showAuthTab("login");
 }
@@ -965,7 +970,7 @@ function goGated(view){ (getAuth() || isGuest()) ? go(view) : openAuth(view, tru
   refreshAcct();
   const h = location.hash.slice(1);
   if(getAuth() || isGuest()){ if(VIEWS.includes(h)) go(h, false); }
-  else { go("home", false); openAuth(VIEWS.includes(h) ? h : "book", true); }
+  else if(VIEWS.includes(h)) { go("home", false); openAuth(h, true); }
 })();
 </script>
 </body></html>
